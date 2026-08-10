@@ -76,7 +76,13 @@ export function CommitteeForm({ member }: CommitteeFormProps) {
           control={control}
           name="photoUrl"
           render={({ field }) => (
-            <ImageUpload label="Photo" value={field.value} onChange={field.onChange} error={errors.photoUrl?.message} />
+            <ImageUpload
+              label="Photo"
+              folder="committee"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.photoUrl?.message}
+            />
           )}
         />
 

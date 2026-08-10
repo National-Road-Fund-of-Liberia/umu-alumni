@@ -3,7 +3,7 @@ import { Inter, Source_Serif_4 } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/constants";
+import { MISSION_STATEMENT, SITE_DESCRIPTION, SITE_NAME } from "@/lib/constants";
 import "./globals.css";
 
 const sans = Inter({
@@ -19,6 +19,7 @@ const serif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
     default: SITE_NAME,
     template: `%s · ${SITE_NAME}`,
@@ -26,6 +27,21 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   icons: {
     icon: "/favicon.png",
+  },
+  openGraph: {
+    title: SITE_NAME,
+    description: MISSION_STATEMENT,
+    siteName: SITE_NAME,
+    type: "website",
+    locale: "en_US",
+    // Placeholder until a proper 1200x630 OG card is designed.
+    images: [{ url: "/favicon.png" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: MISSION_STATEMENT,
+    images: ["/favicon.png"],
   },
 };
 

@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 import { DEGREE_TYPES, PROGRAMS } from "@/types/alumni";
-import { graduationYearSchema, imageDataUrlSchema } from "./common";
+import { graduationYearSchema, imageUrlSchema } from "./common";
 
 export const alumniSchema = z.object({
   firstName: z.string().trim().min(2, "First name is required").max(60),
   lastName: z.string().trim().min(2, "Last name is required").max(60),
-  photoUrl: imageDataUrlSchema.nullable(),
+  photoUrl: imageUrlSchema.nullable(),
   degree: z.enum(DEGREE_TYPES),
   program: z.enum(PROGRAMS),
   graduationYear: graduationYearSchema,

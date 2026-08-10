@@ -4,6 +4,9 @@ export const UNIVERSITY_NAME = "United Methodist University";
 export const SITE_DESCRIPTION =
   "The official home for United Methodist University alumni.";
 
+export const MISSION_STATEMENT =
+  "To establish and maintain good workings and partnership with the United Methodist University through diverse professional institutional development and to encourage high educational standards.";
+
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },

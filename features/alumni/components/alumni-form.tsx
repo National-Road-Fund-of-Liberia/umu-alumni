@@ -86,7 +86,13 @@ export function AlumniForm({ alumni }: AlumniFormProps) {
           control={control}
           name="photoUrl"
           render={({ field }) => (
-            <ImageUpload label="Photo" value={field.value} onChange={field.onChange} error={errors.photoUrl?.message} />
+            <ImageUpload
+              label="Photo"
+              folder="alumni"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.photoUrl?.message}
+            />
           )}
         />
 

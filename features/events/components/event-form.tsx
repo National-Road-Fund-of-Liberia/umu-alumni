@@ -86,6 +86,7 @@ export function EventForm({ event }: EventFormProps) {
           render={({ field }) => (
             <ImageUpload
               label="Cover image"
+              folder="events"
               aspect="video"
               value={field.value}
               onChange={field.onChange}

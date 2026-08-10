@@ -58,7 +58,13 @@ export function ProfileForm({ user }: { user: AdminUser }) {
           control={control}
           name="avatarUrl"
           render={({ field }) => (
-            <ImageUpload label="Avatar" value={field.value} onChange={field.onChange} error={errors.avatarUrl?.message} />
+            <ImageUpload
+              label="Avatar"
+              folder="admin-users"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.avatarUrl?.message}
+            />
           )}
         />
         <FieldWrapper label="Display name" htmlFor="displayName" error={errors.displayName} required>

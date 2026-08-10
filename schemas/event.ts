@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { EVENT_CATEGORIES, EVENT_STATUSES } from "@/types/event";
-import { imageDataUrlSchema, optionalUrlSchema } from "./common";
+import { imageUrlSchema, optionalUrlSchema } from "./common";
 
 // Plain object (no .refine()) so it stays usable with .partial() for update
 // payloads, where only some fields — possibly neither date — are present.
@@ -11,7 +11,7 @@ export const eventObjectSchema = z.object({
   location: z.string().trim().min(3, "Location is required").max(150),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().nullable(),
-  coverImageUrl: imageDataUrlSchema.nullable(),
+  coverImageUrl: imageUrlSchema.nullable(),
   category: z.enum(EVENT_CATEGORIES),
   status: z.enum(EVENT_STATUSES),
   registrationUrl: optionalUrlSchema.nullable(),

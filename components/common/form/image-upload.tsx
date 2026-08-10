@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { DataUriImage } from "@/components/common/data-uri-image";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { uploadImage } from "@/lib/upload-client";
 import { cn } from "@/lib/utils";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
@@ -14,8 +15,10 @@ const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 interface ImageUploadProps {
   label: string;
+  /** Storage folder prefix — e.g. "committee", "gallery", "admin-users". */
+  folder: string;
   value: string | null;
-  onChange: (dataUri: string | null) => void;
+  onChange: (url: string | null) => void;
   error?: string;
   required?: boolean;
   aspect?: "square" | "video";
@@ -23,14 +26,14 @@ interface ImageUploadProps {
 }
 
 /**
- * Reads a client-uploaded file into a base64 data URI via FileReader — the
- * same representation used for seeded placeholder photos, so the rest of
- * the app never has to distinguish "uploaded" from "seeded" images. This is
- * the one component that would need to change if uploads later go to real
- * object storage instead of an inline data URI.
+ * Eagerly uploads a selected file straight to Firebase Storage via
+ * /api/admin/upload, then stores only the resulting HTTPS URL in the form
+ * field. Nothing is base64-encoded in the browser or submitted with the
+ * record payload.
  */
 export function ImageUpload({
   label,
+  folder,
   value,
   onChange,
   error,
@@ -40,9 +43,9 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const inputId = useId();
   const [isDragging, setIsDragging] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  function processFile(file: File) {
+  async function processFile(file: File) {
     if (!ACCEPTED_TYPES.includes(file.type)) {
       toast.error("Please upload a PNG, JPG, or WebP image.");
       return;
@@ -52,22 +55,20 @@ export function ImageUpload({
       return;
     }
 
-    setIsProcessing(true);
-    const reader = new FileReader();
-    reader.onload = () => {
-      onChange(reader.result as string);
-      setIsProcessing(false);
-    };
-    reader.onerror = () => {
-      toast.error("Couldn't read that file. Please try again.");
-      setIsProcessing(false);
-    };
-    reader.readAsDataURL(file);
+    setIsUploading(true);
+    try {
+      const url = await uploadImage(file, folder, value);
+      onChange(url);
+    } catch (uploadError) {
+      toast.error(uploadError instanceof Error ? uploadError.message : "Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
   }
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-    if (file) processFile(file);
+    if (file) void processFile(file);
     event.target.value = "";
   }
 
@@ -75,7 +76,7 @@ export function ImageUpload({
     event.preventDefault();
     setIsDragging(false);
     const file = event.dataTransfer.files?.[0];
-    if (file) processFile(file);
+    if (file) void processFile(file);
   }
 
   const aspectClass = aspect === "square" ? "aspect-square" : "aspect-16/9";
@@ -97,7 +98,8 @@ export function ImageUpload({
           "relative flex w-full max-w-xs items-center justify-center overflow-hidden rounded-lg border border-dashed border-input bg-muted/30 transition-colors",
           aspectClass,
           isDragging && "border-ring bg-muted",
-          error && "border-destructive"
+          error && "border-destructive",
+          isUploading && "pointer-events-none opacity-70"
         )}
         onDragOver={(event) => {
           event.preventDefault();
@@ -114,20 +116,28 @@ export function ImageUpload({
               variant="secondary"
               size="icon-sm"
               className="absolute top-2 right-2 z-10"
+              disabled={isUploading}
               onClick={() => onChange(null)}
               aria-label="Remove image"
             >
               <X className="size-3.5" aria-hidden="true" />
             </Button>
+            {isUploading && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60">
+                <Loader2 className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
+              </div>
+            )}
           </>
         ) : (
           <label htmlFor={inputId} className="flex cursor-pointer flex-col items-center gap-2 p-6 text-center">
-            {isProcessing ? (
+            {isUploading ? (
               <Loader2 className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
             ) : (
               <ImagePlus className="size-5 text-muted-foreground" aria-hidden="true" />
             )}
-            <span className="text-xs text-muted-foreground">Click to upload or drag and drop</span>
+            <span className="text-xs text-muted-foreground">
+              {isUploading ? "Uploading…" : "Click to upload or drag and drop"}
+            </span>
           </label>
         )}
       </div>
@@ -137,6 +147,7 @@ export function ImageUpload({
         type="file"
         accept={ACCEPTED_TYPES.join(",")}
         className="sr-only"
+        disabled={isUploading}
         onChange={handleInputChange}
       />
 

@@ -72,7 +72,13 @@ export function PastPresidentForm({ person }: PastPresidentFormProps) {
           control={control}
           name="photoUrl"
           render={({ field }) => (
-            <ImageUpload label="Photo" value={field.value} onChange={field.onChange} error={errors.photoUrl?.message} />
+            <ImageUpload
+              label="Photo"
+              folder="past-presidents"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.photoUrl?.message}
+            />
           )}
         />
 

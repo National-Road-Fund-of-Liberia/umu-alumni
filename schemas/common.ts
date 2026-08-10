@@ -1,12 +1,11 @@
 import { z } from "zod";
 
-// Accepts a fresh upload (base64 data URI, pushed to Storage server-side)
-// or an already-stored URL — forms resubmit the whole record on save, so an
-// untouched image field comes back as its existing URL, not a data URI.
-export const imageDataUrlSchema = z
+// Image fields hold a Firebase Storage HTTPS URL only — the browser uploads
+// raw bytes via /api/admin/upload before the form ever submits, so data URIs
+// never enter Zod or Firestore.
+export const imageUrlSchema = z
   .string()
-  .refine((val) => val.startsWith("data:image/") || val.startsWith("https://"), "Please upload a valid image file")
-  .refine((val) => !val.startsWith("data:image/") || val.length < 15_000_000, "Image must be smaller than 10MB");
+  .refine((val) => val.startsWith("https://"), "Please upload a valid image file");
 
 export const CURRENT_YEAR = new Date().getFullYear();
 

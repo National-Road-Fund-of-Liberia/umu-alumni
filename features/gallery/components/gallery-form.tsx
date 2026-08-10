@@ -73,6 +73,7 @@ export function GalleryForm({ item }: GalleryFormProps) {
           render={({ field }) => (
             <ImageUpload
               label="Photo"
+              folder="gallery"
               required
               value={field.value || null}
               onChange={(value) => field.onChange(value ?? "")}

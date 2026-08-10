@@ -86,6 +86,7 @@ export function NewsForm({ article }: NewsFormProps) {
           render={({ field }) => (
             <ImageUpload
               label="Cover image"
+              folder="news"
               aspect="video"
               value={field.value}
               onChange={field.onChange}

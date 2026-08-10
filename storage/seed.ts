@@ -14,9 +14,10 @@ type SeedFn = () => unknown[];
 
 /**
  * Registry of "collection name" -> "generator". A collection is only ever
- * seeded once: the JSON-file adapter calls this on the first read of a
- * collection whose file doesn't exist yet, then persists the result so
- * future admin edits survive process restarts instead of being overwritten.
+ * seeded once: the Firestore adapter calls this on the first read of a
+ * collection that has never been initialized, then persists a meta marker
+ * so later permanent deletes (including emptying the collection) are not
+ * undone by re-seeding mock data.
  */
 const SEED_REGISTRY: Record<string, SeedFn> = {
   alumni: () => generateAlumni(ALUMNI_SEED_COUNT),

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useRef, useState, type MouseEvent, type ReactNode } from "react";
 
 import {
   AlertDialog,
@@ -46,16 +46,25 @@ export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  function settle(value: boolean) {
+    const resolve = resolveRef.current;
+    resolveRef.current = null;
+    setOptions(null);
+    resolve?.(value);
+  }
+
   function handleOpenChange(open: boolean) {
     if (!open) {
-      resolveRef.current?.(false);
-      setOptions(null);
+      settle(false);
     }
   }
 
-  function handleConfirm() {
-    resolveRef.current?.(true);
-    setOptions(null);
+  function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
+    // Prevent Radix from dismissing before our settle() runs — otherwise
+    // onOpenChange(false) can resolve the promise as cancelled and swallow
+    // the delete/confirm action.
+    event.preventDefault();
+    settle(true);
   }
 
   return (

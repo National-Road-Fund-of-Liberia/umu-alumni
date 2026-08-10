@@ -4,7 +4,7 @@ import { pastPresidentRepository } from "@/repositories/past-president.repositor
 import { pastPresidentSchema } from "@/schemas/past-president";
 import type { PastPresident } from "@/types/past-president";
 import { NotFoundError } from "@/lib/errors";
-import { deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
+import { deleteStoredImageByUrl, deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
 import { revalidateCommitteePublicPages } from "@/lib/public-cache";
 import { AuditService } from "./audit.service";
 
@@ -70,7 +70,6 @@ export const PastPresidentService = {
     const existing = await this.getById(id);
     const deleted = await pastPresidentRepository.delete(id);
     if (!deleted) throw new NotFoundError("Past president not found.");
-    await deleteStoredImagesForRecord(`past-presidents/${id}/`);
 
     await AuditService.record({
       actorUsername,
@@ -80,5 +79,10 @@ export const PastPresidentService = {
       description: `Removed past president record for ${existing.fullName}`,
     });
     revalidateCommitteePublicPages();
+
+    void Promise.allSettled([
+      existing.photoUrl ? deleteStoredImageByUrl(existing.photoUrl) : Promise.resolve(),
+      deleteStoredImagesForRecord(`past-presidents/${id}/`),
+    ]);
   },
 };

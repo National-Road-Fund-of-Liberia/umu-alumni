@@ -4,7 +4,7 @@ import { eventRepository } from "@/repositories/event.repository";
 import { eventSchema, eventUpdateSchema } from "@/schemas/event";
 import type { AlumniEvent } from "@/types/event";
 import { NotFoundError } from "@/lib/errors";
-import { deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
+import { deleteStoredImageByUrl, deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
 import { revalidateEventPublicPages } from "@/lib/public-cache";
 import { slugify } from "@/lib/utils";
 import { AuditService } from "./audit.service";
@@ -111,7 +111,6 @@ export const EventService = {
     const existing = await this.getById(id);
     const deleted = await eventRepository.delete(id);
     if (!deleted) throw new NotFoundError("Event not found.");
-    await deleteStoredImagesForRecord(`events/${id}/`);
 
     await AuditService.record({
       actorUsername,
@@ -121,5 +120,12 @@ export const EventService = {
       description: `Deleted event "${existing.title}"`,
     });
     revalidateEventPublicPages(existing.slug);
+
+    // Firestore delete already committed — clean Storage in the background so
+    // a slow/failed bucket call can't block or fail the admin delete UX.
+    void Promise.allSettled([
+      existing.coverImageUrl ? deleteStoredImageByUrl(existing.coverImageUrl) : Promise.resolve(),
+      deleteStoredImagesForRecord(`events/${id}/`),
+    ]);
   },
 };

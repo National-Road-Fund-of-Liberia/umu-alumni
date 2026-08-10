@@ -4,7 +4,7 @@ import { galleryRepository } from "@/repositories/gallery.repository";
 import { galleryItemSchema } from "@/schemas/gallery";
 import type { GalleryItem } from "@/types/gallery";
 import { NotFoundError } from "@/lib/errors";
-import { deleteStoredImagesForRecord, resolveImageField } from "@/lib/firebase/storage";
+import { deleteStoredImageByUrl, deleteStoredImagesForRecord, resolveImageField } from "@/lib/firebase/storage";
 import { AuditService } from "./audit.service";
 
 export const GalleryService = {
@@ -64,7 +64,6 @@ export const GalleryService = {
     const existing = await this.getById(id);
     const deleted = await galleryRepository.delete(id);
     if (!deleted) throw new NotFoundError("Gallery item not found.");
-    await deleteStoredImagesForRecord(`gallery/${id}/`);
 
     await AuditService.record({
       actorUsername,
@@ -73,5 +72,10 @@ export const GalleryService = {
       entityId: id,
       description: `Removed a photo from the "${existing.album}" album`,
     });
+
+    void Promise.allSettled([
+      deleteStoredImageByUrl(existing.imageUrl),
+      deleteStoredImagesForRecord(`gallery/${id}/`),
+    ]);
   },
 };

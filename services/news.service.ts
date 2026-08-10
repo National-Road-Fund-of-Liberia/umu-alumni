@@ -4,7 +4,7 @@ import { newsRepository } from "@/repositories/news.repository";
 import { newsSchema } from "@/schemas/news";
 import type { NewsArticle } from "@/types/news";
 import { NotFoundError } from "@/lib/errors";
-import { deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
+import { deleteStoredImageByUrl, deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
 import { revalidateNewsPublicPages } from "@/lib/public-cache";
 import { slugify } from "@/lib/utils";
 import { AuditService } from "./audit.service";
@@ -103,7 +103,6 @@ export const NewsService = {
     const existing = await this.getById(id);
     const deleted = await newsRepository.delete(id);
     if (!deleted) throw new NotFoundError("News article not found.");
-    await deleteStoredImagesForRecord(`news/${id}/`);
 
     await AuditService.record({
       actorUsername,
@@ -113,5 +112,10 @@ export const NewsService = {
       description: `Deleted news article "${existing.title}"`,
     });
     revalidateNewsPublicPages(existing.slug);
+
+    void Promise.allSettled([
+      existing.coverImageUrl ? deleteStoredImageByUrl(existing.coverImageUrl) : Promise.resolve(),
+      deleteStoredImagesForRecord(`news/${id}/`),
+    ]);
   },
 };

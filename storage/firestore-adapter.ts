@@ -6,6 +6,7 @@ import { getSeedData } from "./seed";
 
 // Firestore caps a single batch at 500 writes; stay comfortably under that.
 const MAX_BATCH_SIZE = 400;
+const META_COLLECTION = "_collections";
 
 function docId(record: unknown, index: number): string {
   const id = (record as { id?: string }).id;
@@ -20,9 +21,22 @@ async function commitInChunks(operations: Array<(batch: WriteBatch) => void>) {
   }
 }
 
-// Mirrors the JSON-file adapter's semantics: write() replaces a collection
-// wholesale, and an empty collection gets seeded from the same mock-data
-// registry the JSON adapter used.
+async function markInitialized(collection: string, count: number): Promise<void> {
+  await adminDb.collection(META_COLLECTION).doc(collection).set(
+    {
+      initializedAt: new Date().toISOString(),
+      count,
+    },
+    { merge: true }
+  );
+}
+
+/**
+ * Mirrors the old JSON-file adapter's semantics: write() replaces a
+ * collection wholesale. Seed data is applied only the first time a
+ * collection is seen — after that, an empty collection stays empty so
+ * permanent deletes are not undone by mock-data re-seeding.
+ */
 export class FirestoreStorageAdapter implements StorageAdapter {
   async read<T>(collection: string): Promise<T[]> {
     const snapshot = await adminDb.collection(collection).get();
@@ -30,11 +44,18 @@ export class FirestoreStorageAdapter implements StorageAdapter {
       return snapshot.docs.map((doc) => doc.data() as T);
     }
 
+    const meta = await adminDb.collection(META_COLLECTION).doc(collection).get();
+    if (meta.exists) {
+      return [];
+    }
+
     const seed = getSeedData<T>(collection);
     if (seed && seed.length > 0) {
       await this.write(collection, seed);
       return seed;
     }
+
+    await markInitialized(collection, 0);
     return [];
   }
 
@@ -56,6 +77,7 @@ export class FirestoreStorageAdapter implements StorageAdapter {
     }
 
     await commitInChunks(operations);
+    await markInitialized(collection, records.length);
   }
 }
 

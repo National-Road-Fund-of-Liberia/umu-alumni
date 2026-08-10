@@ -4,7 +4,7 @@ import { alumniRepository } from "@/repositories/alumni.repository";
 import { alumniSchema } from "@/schemas/alumni";
 import type { Alumni, PublicAlumni } from "@/types/alumni";
 import { NotFoundError } from "@/lib/errors";
-import { deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
+import { deleteStoredImageByUrl, deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
 import { revalidateAlumniPublicPages } from "@/lib/public-cache";
 import { AuditService } from "./audit.service";
 
@@ -97,7 +97,6 @@ export const AlumniService = {
     const existing = await this.getById(id);
     const deleted = await alumniRepository.delete(id);
     if (!deleted) throw new NotFoundError("Alumni record not found.");
-    await deleteStoredImagesForRecord(`alumni/${id}/`);
 
     await AuditService.record({
       actorUsername,
@@ -107,5 +106,10 @@ export const AlumniService = {
       description: `Removed alumni record for ${existing.firstName} ${existing.lastName}`,
     });
     revalidateAlumniPublicPages(id);
+
+    void Promise.allSettled([
+      existing.photoUrl ? deleteStoredImageByUrl(existing.photoUrl) : Promise.resolve(),
+      deleteStoredImagesForRecord(`alumni/${id}/`),
+    ]);
   },
 };

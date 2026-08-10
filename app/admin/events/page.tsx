@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { EventAdminTable } from "@/features/events/components/event-admin-table";
+import { EventAdminGrid } from "@/features/events/components/event-admin-grid";
 import { EventService } from "@/services/event.service";
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export default async function AdminEventsPage() {
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">Events</h1>
         <p className="mt-1 text-sm text-muted-foreground">Manage reunions, chapter meetups, and other association events.</p>
       </div>
-      <EventAdminTable events={events} />
+      <EventAdminGrid events={events} />
     </div>
   );
 }

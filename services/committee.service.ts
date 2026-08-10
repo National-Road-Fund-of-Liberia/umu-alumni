@@ -4,7 +4,7 @@ import { committeeRepository } from "@/repositories/committee.repository";
 import { committeeMemberSchema } from "@/schemas/committee";
 import type { CommitteeMember } from "@/types/committee";
 import { NotFoundError } from "@/lib/errors";
-import { deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
+import { deleteStoredImageByUrl, deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
 import { revalidateCommitteePublicPages } from "@/lib/public-cache";
 import { AuditService } from "./audit.service";
 
@@ -68,7 +68,6 @@ export const CommitteeService = {
     const existing = await this.getById(id);
     const deleted = await committeeRepository.delete(id);
     if (!deleted) throw new NotFoundError("Committee member not found.");
-    await deleteStoredImagesForRecord(`committee/${id}/`);
 
     await AuditService.record({
       actorUsername,
@@ -78,5 +77,10 @@ export const CommitteeService = {
       description: `Removed ${existing.fullName} from the committee`,
     });
     revalidateCommitteePublicPages();
+
+    void Promise.allSettled([
+      existing.photoUrl ? deleteStoredImageByUrl(existing.photoUrl) : Promise.resolve(),
+      deleteStoredImagesForRecord(`committee/${id}/`),
+    ]);
   },
 };

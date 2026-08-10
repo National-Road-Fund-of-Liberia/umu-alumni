@@ -10,7 +10,7 @@ import {
 import { Landmark, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/components/common/confirm-dialog-provider";
@@ -26,9 +26,14 @@ import { getCommitteeAdminColumns } from "./committee-admin-columns";
 export function CommitteeAdminTable({ members }: { members: CommitteeMember[] }) {
   const router = useRouter();
   const confirm = useConfirm();
+  const [records, setRecords] = useState(members);
   const [search, setSearch] = useState("");
   const [sorting, setSorting] = useState<SortingState>([{ id: "displayOrder", desc: false }]);
   const debouncedSearch = useDebouncedValue(search, 200);
+
+  useEffect(() => {
+    setRecords(members);
+  }, [members]);
 
   const handleDelete = useCallback(
     async (target: CommitteeMember) => {
@@ -42,6 +47,7 @@ export function CommitteeAdminTable({ members }: { members: CommitteeMember[] })
 
       try {
         await committeeApi.remove(target.id);
+        setRecords((current) => current.filter((record) => record.id !== target.id));
         toast.success(`${target.fullName} was removed.`);
         router.refresh();
       } catch (error) {
@@ -54,7 +60,7 @@ export function CommitteeAdminTable({ members }: { members: CommitteeMember[] })
   const columns = useMemo(() => getCommitteeAdminColumns({ onDelete: handleDelete }), [handleDelete]);
 
   const table = useReactTable({
-    data: members,
+    data: records,
     columns,
     state: { sorting, globalFilter: debouncedSearch },
     onSortingChange: setSorting,

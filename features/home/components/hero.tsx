@@ -24,7 +24,7 @@ export function Hero() {
             </Button>
           </div>
         </div>
-        <div className="relative mx-auto aspect-square w-full max-w-sm">
+        <div className="relative mx-auto hidden aspect-square w-full max-w-sm lg:block">
           <div className="absolute inset-0 rounded-full border border-gold/30" aria-hidden="true" />
           <div className="absolute inset-6 flex items-center justify-center rounded-full border border-border bg-card">
             <Image

@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { eventsApi } from "@/features/events/api";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
+import { navigateAfterMutation } from "@/lib/navigate-after-mutation";
 import { ResourceApiError } from "@/lib/resource-client";
 import { eventSchema, type EventFormValues } from "@/schemas/event";
 import { EVENT_CATEGORIES, EVENT_STATUSES, type AlumniEvent } from "@/types/event";
@@ -65,8 +66,7 @@ export function EventForm({ event }: EventFormProps) {
         await eventsApi.create(payload);
         toast.success("Event created.");
       }
-      router.push("/admin/events");
-      router.refresh();
+      navigateAfterMutation(router, "/admin/events");
     } catch (error) {
       if (error instanceof ResourceApiError && error.fieldErrors) {
         for (const [field, messages] of Object.entries(error.fieldErrors)) {

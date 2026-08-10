@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { alumniApi } from "@/features/alumni/api";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
+import { navigateAfterMutation } from "@/lib/navigate-after-mutation";
 import { ResourceApiError } from "@/lib/resource-client";
 import { alumniSchema, type AlumniFormValues } from "@/schemas/alumni";
 import { DEGREE_TYPES, PROGRAMS, type Alumni } from "@/types/alumni";
@@ -65,8 +66,7 @@ export function AlumniForm({ alumni }: AlumniFormProps) {
         await alumniApi.create(values);
         toast.success("Alumni record created.");
       }
-      router.push("/admin/alumni");
-      router.refresh();
+      navigateAfterMutation(router, "/admin/alumni");
     } catch (error) {
       if (error instanceof ResourceApiError && error.fieldErrors) {
         for (const [field, messages] of Object.entries(error.fieldErrors)) {

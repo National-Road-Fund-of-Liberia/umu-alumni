@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { committeeApi } from "@/features/committee/api";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
+import { navigateAfterMutation } from "@/lib/navigate-after-mutation";
 import { ResourceApiError } from "@/lib/resource-client";
 import { committeeMemberSchema, type CommitteeMemberFormValues } from "@/schemas/committee";
 import type { CommitteeMember } from "@/types/committee";
@@ -57,8 +58,7 @@ export function CommitteeForm({ member }: CommitteeFormProps) {
         await committeeApi.create(values);
         toast.success("Committee member added.");
       }
-      router.push("/admin/committee");
-      router.refresh();
+      navigateAfterMutation(router, "/admin/committee");
     } catch (error) {
       if (error instanceof ResourceApiError && error.fieldErrors) {
         for (const [field, messages] of Object.entries(error.fieldErrors)) {

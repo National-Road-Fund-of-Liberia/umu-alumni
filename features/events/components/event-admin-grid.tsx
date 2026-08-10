@@ -3,7 +3,7 @@
 import { CalendarDays, MapPin, MoreVertical, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/components/common/confirm-dialog-provider";
@@ -33,12 +33,17 @@ const STATUS_VARIANT: Record<AlumniEvent["status"], "default" | "secondary" | "d
 export function EventAdminGrid({ events }: { events: AlumniEvent[] }) {
   const router = useRouter();
   const confirm = useConfirm();
+  const [records, setRecords] = useState(events);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const debouncedSearch = useDebouncedValue(search, 200);
 
+  useEffect(() => {
+    setRecords(events);
+  }, [events]);
+
   const filtered = useMemo(() => {
-    return events
+    return records
       .filter((event) => {
         if (status !== "all" && event.status !== status) return false;
         if (debouncedSearch) {
@@ -48,7 +53,7 @@ export function EventAdminGrid({ events }: { events: AlumniEvent[] }) {
         return true;
       })
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-  }, [events, status, debouncedSearch]);
+  }, [records, status, debouncedSearch]);
 
   async function handleDelete(target: AlumniEvent) {
     const confirmed = await confirm({
@@ -61,6 +66,7 @@ export function EventAdminGrid({ events }: { events: AlumniEvent[] }) {
 
     try {
       await eventsApi.remove(target.id);
+      setRecords((current) => current.filter((record) => record.id !== target.id));
       toast.success("Event deleted.");
       router.refresh();
     } catch (error) {

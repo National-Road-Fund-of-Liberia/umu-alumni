@@ -13,6 +13,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { galleryApi } from "@/features/gallery/api";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
+import { navigateAfterMutation } from "@/lib/navigate-after-mutation";
 import { ResourceApiError } from "@/lib/resource-client";
 import { galleryItemSchema, type GalleryItemFormValues } from "@/schemas/gallery";
 import type { GalleryItem } from "@/types/gallery";
@@ -52,8 +53,7 @@ export function GalleryForm({ item }: GalleryFormProps) {
         await galleryApi.create(values);
         toast.success("Photo added.");
       }
-      router.push("/admin/gallery");
-      router.refresh();
+      navigateAfterMutation(router, "/admin/gallery");
     } catch (error) {
       if (error instanceof ResourceApiError && error.fieldErrors) {
         for (const [field, messages] of Object.entries(error.fieldErrors)) {

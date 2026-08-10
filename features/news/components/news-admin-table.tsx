@@ -32,11 +32,16 @@ const PAGE_SIZE = 10;
 export function NewsAdminTable({ articles }: { articles: NewsArticle[] }) {
   const router = useRouter();
   const confirm = useConfirm();
+  const [records, setRecords] = useState(articles);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [sorting, setSorting] = useState<SortingState>([{ id: "title", desc: false }]);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: PAGE_SIZE });
   const debouncedSearch = useDebouncedValue(search, 200);
+
+  useEffect(() => {
+    setRecords(articles);
+  }, [articles]);
 
   const handleDelete = useCallback(
     async (target: NewsArticle) => {
@@ -50,6 +55,7 @@ export function NewsAdminTable({ articles }: { articles: NewsArticle[] }) {
 
       try {
         await newsApi.remove(target.id);
+        setRecords((current) => current.filter((record) => record.id !== target.id));
         toast.success("Article deleted.");
         router.refresh();
       } catch (error) {
@@ -62,8 +68,8 @@ export function NewsAdminTable({ articles }: { articles: NewsArticle[] }) {
   const columns = useMemo(() => getNewsAdminColumns({ onDelete: handleDelete }), [handleDelete]);
 
   const scopedData = useMemo(
-    () => (status === "all" ? articles : articles.filter((article) => article.status === status)),
-    [articles, status]
+    () => (status === "all" ? records : records.filter((article) => article.status === status)),
+    [records, status]
   );
 
   useEffect(() => {

@@ -13,6 +13,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { pastPresidentsApi } from "@/features/past-presidents/api";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
+import { navigateAfterMutation } from "@/lib/navigate-after-mutation";
 import { ResourceApiError } from "@/lib/resource-client";
 import { pastPresidentSchema, type PastPresidentFormValues } from "@/schemas/past-president";
 import type { PastPresident } from "@/types/past-president";
@@ -53,8 +54,7 @@ export function PastPresidentForm({ person }: PastPresidentFormProps) {
         await pastPresidentsApi.create(values);
         toast.success("Past president added.");
       }
-      router.push("/admin/committee/past-presidents");
-      router.refresh();
+      navigateAfterMutation(router, "/admin/committee/past-presidents");
     } catch (error) {
       if (error instanceof ResourceApiError && error.fieldErrors) {
         for (const [field, messages] of Object.entries(error.fieldErrors)) {

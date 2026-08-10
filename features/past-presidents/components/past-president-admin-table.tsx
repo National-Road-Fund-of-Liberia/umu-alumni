@@ -4,7 +4,7 @@ import { getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } 
 import { Plus, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/components/common/confirm-dialog-provider";
@@ -18,7 +18,12 @@ import { getPastPresidentAdminColumns } from "./past-president-admin-columns";
 export function PastPresidentAdminTable({ people }: { people: PastPresident[] }) {
   const router = useRouter();
   const confirm = useConfirm();
+  const [records, setRecords] = useState(people);
   const [sorting, setSorting] = useState<SortingState>([{ id: "year", desc: true }]);
+
+  useEffect(() => {
+    setRecords(people);
+  }, [people]);
 
   const handleDelete = useCallback(
     async (target: PastPresident) => {
@@ -32,6 +37,7 @@ export function PastPresidentAdminTable({ people }: { people: PastPresident[] })
 
       try {
         await pastPresidentsApi.remove(target.id);
+        setRecords((current) => current.filter((record) => record.id !== target.id));
         toast.success(`${target.fullName} was removed.`);
         router.refresh();
       } catch (error) {
@@ -44,7 +50,7 @@ export function PastPresidentAdminTable({ people }: { people: PastPresident[] })
   const columns = useMemo(() => getPastPresidentAdminColumns({ onDelete: handleDelete }), [handleDelete]);
 
   const table = useReactTable({
-    data: people,
+    data: records,
     columns,
     state: { sorting },
     onSortingChange: setSorting,

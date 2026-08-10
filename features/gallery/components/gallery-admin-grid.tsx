@@ -3,7 +3,7 @@
 import { ImagePlus, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/components/common/confirm-dialog-provider";
@@ -19,14 +19,19 @@ import type { GalleryItem } from "@/types/gallery";
 export function GalleryAdminGrid({ items }: { items: GalleryItem[] }) {
   const router = useRouter();
   const confirm = useConfirm();
+  const [records, setRecords] = useState(items);
   const [search, setSearch] = useState("");
   const [album, setAlbum] = useState("all");
   const debouncedSearch = useDebouncedValue(search, 200);
 
-  const albums = useMemo(() => Array.from(new Set(items.map((item) => item.album))).sort(), [items]);
+  useEffect(() => {
+    setRecords(items);
+  }, [items]);
+
+  const albums = useMemo(() => Array.from(new Set(records.map((item) => item.album))).sort(), [records]);
 
   const filtered = useMemo(() => {
-    return items.filter((item) => {
+    return records.filter((item) => {
       if (album !== "all" && item.album !== album) return false;
       if (debouncedSearch) {
         const haystack = `${item.caption} ${item.album}`.toLowerCase();
@@ -34,7 +39,7 @@ export function GalleryAdminGrid({ items }: { items: GalleryItem[] }) {
       }
       return true;
     });
-  }, [items, album, debouncedSearch]);
+  }, [records, album, debouncedSearch]);
 
   async function handleDelete(target: GalleryItem) {
     const confirmed = await confirm({
@@ -47,6 +52,7 @@ export function GalleryAdminGrid({ items }: { items: GalleryItem[] }) {
 
     try {
       await galleryApi.remove(target.id);
+      setRecords((current) => current.filter((record) => record.id !== target.id));
       toast.success("Photo deleted.");
       router.refresh();
     } catch (error) {

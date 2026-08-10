@@ -32,11 +32,16 @@ const PAGE_SIZE = 10;
 export function AlumniAdminTable({ alumni }: { alumni: Alumni[] }) {
   const router = useRouter();
   const confirm = useConfirm();
+  const [records, setRecords] = useState(alumni);
   const [search, setSearch] = useState("");
   const [program, setProgram] = useState("all");
   const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }]);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: PAGE_SIZE });
   const debouncedSearch = useDebouncedValue(search, 200);
+
+  useEffect(() => {
+    setRecords(alumni);
+  }, [alumni]);
 
   const handleDelete = useCallback(
     async (target: Alumni) => {
@@ -51,6 +56,7 @@ export function AlumniAdminTable({ alumni }: { alumni: Alumni[] }) {
 
       try {
         await alumniApi.remove(target.id);
+        setRecords((current) => current.filter((record) => record.id !== target.id));
         toast.success(`${target.firstName} ${target.lastName} was removed.`);
         router.refresh();
       } catch (error) {
@@ -63,8 +69,8 @@ export function AlumniAdminTable({ alumni }: { alumni: Alumni[] }) {
   const columns = useMemo(() => getAlumniAdminColumns({ onDelete: handleDelete }), [handleDelete]);
 
   const scopedData = useMemo(
-    () => (program === "all" ? alumni : alumni.filter((record) => record.program === program)),
-    [alumni, program]
+    () => (program === "all" ? records : records.filter((record) => record.program === program)),
+    [records, program]
   );
 
   useEffect(() => {

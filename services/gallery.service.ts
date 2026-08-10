@@ -5,6 +5,7 @@ import { galleryItemSchema } from "@/schemas/gallery";
 import type { GalleryItem } from "@/types/gallery";
 import { NotFoundError } from "@/lib/errors";
 import { deleteStoredImageByUrl, deleteStoredImagesForRecord, resolveImageField } from "@/lib/firebase/storage";
+import { revalidateGalleryPages } from "@/lib/public-cache";
 import { AuditService } from "./audit.service";
 
 export const GalleryService = {
@@ -35,6 +36,7 @@ export const GalleryService = {
       entityId: record.id,
       description: `Uploaded a photo to the "${record.album}" album`,
     });
+    revalidateGalleryPages();
 
     return record;
   },
@@ -56,6 +58,7 @@ export const GalleryService = {
       entityId: id,
       description: `Updated a photo in the "${existing.album}" album`,
     });
+    revalidateGalleryPages();
 
     return updated;
   },
@@ -72,6 +75,7 @@ export const GalleryService = {
       entityId: id,
       description: `Removed a photo from the "${existing.album}" album`,
     });
+    revalidateGalleryPages();
 
     void Promise.allSettled([
       deleteStoredImageByUrl(existing.imageUrl),

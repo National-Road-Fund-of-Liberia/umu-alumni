@@ -9,8 +9,7 @@ import {
   type PaginationState,
   type SortingState,
 } from "@tanstack/react-table";
-import { Newspaper, Plus, Search } from "lucide-react";
-import Link from "next/link";
+import { Mail, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -19,57 +18,56 @@ import { useConfirm } from "@/components/common/confirm-dialog-provider";
 import { DataTable } from "@/components/common/data-table";
 import { EmptyState } from "@/components/common/empty-state";
 import { TablePagination } from "@/components/common/table-pagination";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { newsApi } from "@/features/news/api";
+import { messagesApi } from "@/features/contact/api";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { NEWS_STATUSES, type NewsArticle } from "@/types/news";
-import { getNewsAdminColumns } from "./news-admin-columns";
+import { CONTACT_MESSAGE_STATUSES, type ContactMessage } from "@/types/contact-message";
+import { getContactMessageColumns } from "./contact-message-columns";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
-export function NewsAdminTable({ articles }: { articles: NewsArticle[] }) {
+export function ContactMessagesTable({ messages }: { messages: ContactMessage[] }) {
   const router = useRouter();
   const confirm = useConfirm();
   const [removedIds, setRemovedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
-  const [sorting, setSorting] = useState<SortingState>([{ id: "title", desc: false }]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "createdAt", desc: true }]);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: PAGE_SIZE });
   const debouncedSearch = useDebouncedValue(search, 200);
 
   const records = useMemo(
-    () => articles.filter((record) => !removedIds.has(record.id)),
-    [articles, removedIds]
+    () => messages.filter((message) => !removedIds.has(message.id)),
+    [messages, removedIds]
   );
 
   const handleDelete = useCallback(
-    async (target: NewsArticle) => {
+    async (target: ContactMessage) => {
       const confirmed = await confirm({
-        title: `Delete "${target.title}"?`,
-        description: "This will permanently remove this article. This action cannot be undone.",
+        title: `Delete message from ${target.name}?`,
+        description: "This will permanently remove this contact message. This action cannot be undone.",
         confirmLabel: "Delete",
         destructive: true,
       });
       if (!confirmed) return;
 
       try {
-        await newsApi.remove(target.id);
+        await messagesApi.remove(target.id);
         setRemovedIds((current) => new Set([...current, target.id]));
-        toast.success("Article deleted.");
+        toast.success("Message deleted.");
         router.refresh();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to delete article.");
+        toast.error(error instanceof Error ? error.message : "Failed to delete message.");
       }
     },
     [confirm, router]
   );
 
-  const columns = useMemo(() => getNewsAdminColumns({ onDelete: handleDelete }), [handleDelete]);
+  const columns = useMemo(() => getContactMessageColumns({ onDelete: handleDelete }), [handleDelete]);
 
   const scopedData = useMemo(
-    () => (status === "all" ? records : records.filter((article) => article.status === status)),
+    () => (status === "all" ? records : records.filter((message) => message.status === status)),
     [records, status]
   );
 
@@ -91,6 +89,7 @@ export function NewsAdminTable({ articles }: { articles: NewsArticle[] }) {
   });
 
   const totalMatches = table.getFilteredRowModel().rows.length;
+  const unreadCount = records.filter((message) => message.status === "unread").length;
 
   return (
     <div className="space-y-4">
@@ -103,41 +102,40 @@ export function NewsAdminTable({ articles }: { articles: NewsArticle[] }) {
             />
             <Input
               type="search"
-              placeholder="Search articles…"
+              placeholder="Search messages…"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="h-9 pl-9"
-              aria-label="Search articles"
+              aria-label="Search messages"
             />
           </div>
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="h-9 w-full sm:w-44" aria-label="Filter by status">
-              <SelectValue placeholder="All Statuses" />
+            <SelectTrigger className="h-9 w-full sm:w-40" aria-label="Filter by status">
+              <SelectValue placeholder="All statuses" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {NEWS_STATUSES.map((statusOption) => (
+              <SelectItem value="all">All statuses</SelectItem>
+              {CONTACT_MESSAGE_STATUSES.map((statusOption) => (
                 <SelectItem key={statusOption} value={statusOption}>
-                  {statusOption}
+                  {statusOption === "unread" ? "Unread" : "Read"}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        <Button asChild>
-          <Link href="/admin/news/new">
-            <Plus className="size-4" aria-hidden="true" />
-            Add Article
-          </Link>
-        </Button>
+        {unreadCount > 0 && (
+          <p className="text-sm text-muted-foreground">
+            {unreadCount} unread {unreadCount === 1 ? "message" : "messages"}
+          </p>
+        )}
       </div>
 
       {table.getRowModel().rows.length === 0 ? (
-        <EmptyState icon={Newspaper} title="No articles found" description="Try adjusting your search or filters." />
+        <EmptyState icon={Mail} title="No messages found" description="Try adjusting your search or filters." />
       ) : (
         <DataTable
           table={table}
-          footer={<TablePagination table={table} totalRows={totalMatches} itemLabel="articles" />}
+          footer={<TablePagination table={table} totalRows={totalMatches} itemLabel="messages" />}
         />
       )}
     </div>

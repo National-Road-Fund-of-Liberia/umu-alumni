@@ -1,22 +1,26 @@
 import type { NextRequest } from "next/server";
 
 import { apiError, apiSuccess } from "@/lib/api-response";
-import { contactSchema } from "@/schemas/contact";
+import { RateLimitError } from "@/lib/errors";
+import { clientIpFromRequest, rateLimit } from "@/lib/rate-limit";
+import { ContactService } from "@/services/contact.service";
 
-/**
- * Mocked endpoint: the brief doesn't call for a Contact Messages admin
- * module, so this validates and "sends" the message (logged server-side)
- * rather than persisting a new domain entity that has no owner elsewhere
- * in the app.
- */
+const CONTACT_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
+
 export async function POST(request: NextRequest) {
   try {
+    const ip = clientIpFromRequest(request);
+    const limited = rateLimit(`contact:${ip}`, CONTACT_RATE_LIMIT);
+    if (!limited.success) {
+      throw new RateLimitError(
+        "Too many messages sent from this network. Please try again later.",
+        limited.retryAfterSeconds
+      );
+    }
+
     const body = await request.json();
-    const data = contactSchema.parse(body);
-
-    console.info(`[contact] New message from ${data.name} <${data.email}>: ${data.subject}`);
-
-    return apiSuccess({ received: true });
+    const record = await ContactService.create(body);
+    return apiSuccess({ received: true, id: record.id }, 201);
   } catch (error) {
     return apiError(error);
   }

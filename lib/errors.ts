@@ -21,3 +21,13 @@ export class UnauthorizedError extends Error {
     this.name = "UnauthorizedError";
   }
 }
+
+export class RateLimitError extends Error {
+  retryAfterSeconds: number;
+
+  constructor(message = "Too many attempts. Please try again later.", retryAfterSeconds = 60) {
+    super(message);
+    this.name = "RateLimitError";
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}

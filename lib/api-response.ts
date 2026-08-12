@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import type { ApiResponse } from "@/types/api";
-import { NotFoundError, UnauthorizedError, ValidationError } from "./errors";
+import { NotFoundError, RateLimitError, UnauthorizedError, ValidationError } from "./errors";
 
 export function apiSuccess<T>(data: T, status = 200): NextResponse<ApiResponse<T>> {
   return NextResponse.json({ success: true, data }, { status });
@@ -54,6 +54,16 @@ export function apiError(error: unknown): NextResponse<ApiResponse<never>> {
     return NextResponse.json(
       { success: false, error: { message: error.message, code: "UNAUTHORIZED" } },
       { status: 401 }
+    );
+  }
+
+  if (error instanceof RateLimitError) {
+    return NextResponse.json(
+      { success: false, error: { message: error.message, code: "RATE_LIMITED" } },
+      {
+        status: 429,
+        headers: { "Retry-After": String(error.retryAfterSeconds) },
+      }
     );
   }
 

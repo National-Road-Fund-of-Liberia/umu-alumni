@@ -10,7 +10,7 @@ import {
 import { Landmark, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/components/common/confirm-dialog-provider";
@@ -26,14 +26,15 @@ import { getCommitteeAdminColumns } from "./committee-admin-columns";
 export function CommitteeAdminTable({ members }: { members: CommitteeMember[] }) {
   const router = useRouter();
   const confirm = useConfirm();
-  const [records, setRecords] = useState(members);
+  const [removedIds, setRemovedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [search, setSearch] = useState("");
   const [sorting, setSorting] = useState<SortingState>([{ id: "displayOrder", desc: false }]);
   const debouncedSearch = useDebouncedValue(search, 200);
 
-  useEffect(() => {
-    setRecords(members);
-  }, [members]);
+  const records = useMemo(
+    () => members.filter((record) => !removedIds.has(record.id)),
+    [members, removedIds]
+  );
 
   const handleDelete = useCallback(
     async (target: CommitteeMember) => {
@@ -47,7 +48,7 @@ export function CommitteeAdminTable({ members }: { members: CommitteeMember[] })
 
       try {
         await committeeApi.remove(target.id);
-        setRecords((current) => current.filter((record) => record.id !== target.id));
+        setRemovedIds((current) => new Set([...current, target.id]));
         toast.success(`${target.fullName} was removed.`);
         router.refresh();
       } catch (error) {

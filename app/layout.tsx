@@ -34,11 +34,10 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     type: "website",
     locale: "en_US",
-    // Placeholder until a proper 1200x630 OG card is designed.
     images: [{ url: "/favicon.png" }],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: SITE_NAME,
     description: MISSION_STATEMENT,
     images: ["/favicon.png"],

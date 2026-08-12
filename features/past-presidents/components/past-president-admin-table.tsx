@@ -4,7 +4,7 @@ import { getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } 
 import { Plus, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/components/common/confirm-dialog-provider";
@@ -18,12 +18,13 @@ import { getPastPresidentAdminColumns } from "./past-president-admin-columns";
 export function PastPresidentAdminTable({ people }: { people: PastPresident[] }) {
   const router = useRouter();
   const confirm = useConfirm();
-  const [records, setRecords] = useState(people);
+  const [removedIds, setRemovedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [sorting, setSorting] = useState<SortingState>([{ id: "year", desc: true }]);
 
-  useEffect(() => {
-    setRecords(people);
-  }, [people]);
+  const records = useMemo(
+    () => people.filter((record) => !removedIds.has(record.id)),
+    [people, removedIds]
+  );
 
   const handleDelete = useCallback(
     async (target: PastPresident) => {
@@ -37,7 +38,7 @@ export function PastPresidentAdminTable({ people }: { people: PastPresident[] })
 
       try {
         await pastPresidentsApi.remove(target.id);
-        setRecords((current) => current.filter((record) => record.id !== target.id));
+        setRemovedIds((current) => new Set([...current, target.id]));
         toast.success(`${target.fullName} was removed.`);
         router.refresh();
       } catch (error) {

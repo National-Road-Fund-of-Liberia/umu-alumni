@@ -3,7 +3,7 @@
 import { ImagePlus, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/components/common/confirm-dialog-provider";
@@ -19,14 +19,15 @@ import type { GalleryItem } from "@/types/gallery";
 export function GalleryAdminGrid({ items }: { items: GalleryItem[] }) {
   const router = useRouter();
   const confirm = useConfirm();
-  const [records, setRecords] = useState(items);
+  const [removedIds, setRemovedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [search, setSearch] = useState("");
   const [album, setAlbum] = useState("all");
   const debouncedSearch = useDebouncedValue(search, 200);
 
-  useEffect(() => {
-    setRecords(items);
-  }, [items]);
+  const records = useMemo(
+    () => items.filter((item) => !removedIds.has(item.id)),
+    [items, removedIds]
+  );
 
   const albums = useMemo(() => Array.from(new Set(records.map((item) => item.album))).sort(), [records]);
 
@@ -52,7 +53,7 @@ export function GalleryAdminGrid({ items }: { items: GalleryItem[] }) {
 
     try {
       await galleryApi.remove(target.id);
-      setRecords((current) => current.filter((record) => record.id !== target.id));
+      setRemovedIds((current) => new Set([...current, target.id]));
       toast.success("Photo deleted.");
       router.refresh();
     } catch (error) {

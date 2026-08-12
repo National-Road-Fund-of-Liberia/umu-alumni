@@ -3,7 +3,7 @@
 import { CalendarDays, MapPin, MoreVertical, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/components/common/confirm-dialog-provider";
@@ -33,14 +33,15 @@ const STATUS_VARIANT: Record<AlumniEvent["status"], "default" | "secondary" | "d
 export function EventAdminGrid({ events }: { events: AlumniEvent[] }) {
   const router = useRouter();
   const confirm = useConfirm();
-  const [records, setRecords] = useState(events);
+  const [removedIds, setRemovedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const debouncedSearch = useDebouncedValue(search, 200);
 
-  useEffect(() => {
-    setRecords(events);
-  }, [events]);
+  const records = useMemo(
+    () => events.filter((event) => !removedIds.has(event.id)),
+    [events, removedIds]
+  );
 
   const filtered = useMemo(() => {
     return records
@@ -66,7 +67,7 @@ export function EventAdminGrid({ events }: { events: AlumniEvent[] }) {
 
     try {
       await eventsApi.remove(target.id);
-      setRecords((current) => current.filter((record) => record.id !== target.id));
+      setRemovedIds((current) => new Set([...current, target.id]));
       toast.success("Event deleted.");
       router.refresh();
     } catch (error) {

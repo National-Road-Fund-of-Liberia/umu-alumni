@@ -4,6 +4,7 @@ import {
   History,
   Image as ImageIcon,
   LayoutDashboard,
+  Mail,
   Newspaper,
   Settings,
   ShieldCheck,
@@ -37,6 +38,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
       { label: "Events", href: "/admin/events", icon: CalendarDays },
       { label: "Gallery", href: "/admin/gallery", icon: ImageIcon },
       { label: "Executive Committee", href: "/admin/committee", icon: Landmark },
+      { label: "Messages", href: "/admin/messages", icon: Mail },
     ],
   },
   {

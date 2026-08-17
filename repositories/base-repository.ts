@@ -46,10 +46,6 @@ export class BaseRepository<T extends Entity> {
   }
 
   async delete(id: string): Promise<boolean> {
-    const records = await this.findAll();
-    const next = records.filter((record) => record.id !== id);
-    if (next.length === records.length) return false;
-    await this.adapter.write(this.collection, next);
-    return true;
+    return this.adapter.deleteOne(this.collection, id);
   }
 }

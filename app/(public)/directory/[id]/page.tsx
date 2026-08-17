@@ -1,4 +1,4 @@
-import { ArrowLeft, Briefcase, GraduationCap } from "lucide-react";
+import { ArrowLeft, Briefcase } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -44,44 +44,27 @@ export default async function AlumniProfilePage({ params }: AlumniProfilePagePro
         </Link>
 
         <div className="mt-8 flex flex-col items-start gap-6 sm:flex-row">
-          <div className="aspect-square w-32 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:w-40">
-            <DataUriImage src={alumni.photoUrl} alt={`Portrait of ${fullName}`} className="h-full w-full" />
-          </div>
+          {alumni.photoUrl && (
+            <div className="aspect-square w-32 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:w-40">
+              <DataUriImage src={alumni.photoUrl} alt={`Portrait of ${fullName}`} className="h-full w-full" />
+            </div>
+          )}
 
           <div className="min-w-0">
             <h1 className="text-balance font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               {fullName}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {alumni.degree} in {alumni.program} · Class of {alumni.graduationYear}
+              {alumni.program} · Class of {alumni.graduationYear}
             </p>
 
-            <dl className="mt-5 space-y-3">
-              <div className="flex items-start gap-2.5 text-sm">
-                <Briefcase className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                <div>
-                  <dt className="sr-only">Occupation</dt>
-                  <dd className="text-foreground">
-                    {alumni.occupation} at {alumni.organization}
-                  </dd>
-                </div>
-              </div>
-              <div className="flex items-start gap-2.5 text-sm">
-                <GraduationCap className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                <div>
-                  <dt className="sr-only">Education</dt>
-                  <dd className="text-foreground">
-                    {alumni.degree}, {alumni.program} ({alumni.graduationYear})
-                  </dd>
-                </div>
-              </div>
-            </dl>
+            <div className="mt-5 flex items-start gap-2.5 text-sm">
+              <Briefcase className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <span className="text-foreground">
+                {alumni.occupation} at {alumni.organization}
+              </span>
+            </div>
           </div>
-        </div>
-
-        <div className="mt-10 border-t border-border pt-8">
-          <h2 className="font-heading text-base font-semibold text-foreground">Biography</h2>
-          <p className="mt-3 text-base leading-relaxed text-muted-foreground">{alumni.biography}</p>
         </div>
       </div>
     </div>

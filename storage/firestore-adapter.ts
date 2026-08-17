@@ -79,6 +79,15 @@ export class FirestoreStorageAdapter implements StorageAdapter {
     await commitInChunks(operations);
     await markInitialized(collection, records.length);
   }
+
+  async deleteOne(collection: string, id: string): Promise<boolean> {
+    const ref = adminDb.collection(collection).doc(id);
+    const snapshot = await ref.get();
+    if (!snapshot.exists) return false;
+
+    await ref.delete();
+    return true;
+  }
 }
 
 export const storageAdapter: StorageAdapter = new FirestoreStorageAdapter();

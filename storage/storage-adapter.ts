@@ -7,4 +7,6 @@
 export interface StorageAdapter {
   read<T>(collection: string): Promise<T[]>;
   write<T>(collection: string, records: T[]): Promise<void>;
+  /** Deletes a single document without touching the rest of the collection. Returns false if it didn't exist. */
+  deleteOne(collection: string, id: string): Promise<boolean>;
 }

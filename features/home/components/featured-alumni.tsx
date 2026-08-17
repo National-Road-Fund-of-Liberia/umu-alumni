@@ -10,7 +10,7 @@ export function FeaturedAlumniSection({ alumni }: { alumni: FeaturedAlumni[] }) 
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         <SectionHeading
           title="Graduates making an impact"
-          description="A small sample of the thousands of UMU graduates building careers across Liberia and beyond."
+          description="A small sample of the thousands of UMU graduates making impacts across Liberia and beyond."
           viewAllHref="/directory"
           viewAllLabel="Browse the directory"
         />

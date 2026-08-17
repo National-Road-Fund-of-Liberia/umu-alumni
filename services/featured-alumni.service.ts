@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 import { featuredAlumniRepository } from "@/repositories/featured-alumni.repository";
 import { featuredAlumniSchema } from "@/schemas/featured-alumni";
@@ -9,6 +9,16 @@ import { NotFoundError } from "@/lib/errors";
 import { deleteStoredImageByUrl, deleteStoredImagesForRecord, resolveNullableImageField } from "@/lib/firebase/storage";
 import { revalidateFeaturedAlumniPublicPages } from "@/lib/public-cache";
 import { AuditService } from "./audit.service";
+
+// Matches exactly what the Tiptap StarterKit editor (bold/italic/lists,
+// heading disabled) can produce, so this is a strict allowlist rather than
+// a generic HTML sanitizer.
+function sanitizeBio(html: string): string {
+  return sanitizeHtml(html, {
+    allowedTags: ["p", "strong", "em", "ul", "ol", "li", "br"],
+    allowedAttributes: {},
+  });
+}
 
 export const FeaturedAlumniService = {
   async listAll(): Promise<FeaturedAlumni[]> {
@@ -30,7 +40,7 @@ export const FeaturedAlumniService = {
     const record: FeaturedAlumni = {
       id,
       ...data,
-      bio: DOMPurify.sanitize(data.bio),
+      bio: sanitizeBio(data.bio),
       photoUrl,
       createdAt: now,
       updatedAt: now,
@@ -58,7 +68,7 @@ export const FeaturedAlumniService = {
         : undefined;
     const updated = await featuredAlumniRepository.update(id, {
       ...data,
-      ...(data.bio !== undefined ? { bio: DOMPurify.sanitize(data.bio) } : {}),
+      ...(data.bio !== undefined ? { bio: sanitizeBio(data.bio) } : {}),
       ...(photoUrl !== undefined ? { photoUrl } : {}),
       updatedAt: new Date().toISOString(),
     });

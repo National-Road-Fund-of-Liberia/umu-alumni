@@ -20,5 +20,5 @@ export function DataUriImage({
   }
 
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} loading="lazy" className={cn("object-cover", className)} />;
+  return <img src={src} alt={alt} loading="lazy" className={cn("object-cover object-top", className)} />;
 }

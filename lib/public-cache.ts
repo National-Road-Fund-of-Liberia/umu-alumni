@@ -50,3 +50,10 @@ export function revalidateGalleryPages(): void {
   revalidatePath("/admin/gallery");
   revalidateAdminShell();
 }
+
+export function revalidateFeaturedAlumniPublicPages(id?: string): void {
+  revalidatePath("/");
+  if (id) revalidatePath(`/featured-alumni/${id}`);
+  revalidatePath("/admin/featured-alumni");
+  revalidateAdminShell();
+}

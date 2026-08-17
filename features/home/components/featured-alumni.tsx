@@ -1,8 +1,8 @@
 import { SectionHeading } from "@/components/common/section-heading";
-import { AlumniCard } from "@/features/alumni/components/alumni-card";
-import type { PublicAlumni } from "@/types/alumni";
+import { FeaturedAlumniCard } from "@/features/featured-alumni/components/featured-alumni-card";
+import type { FeaturedAlumni } from "@/types/featured-alumni";
 
-export function FeaturedAlumni({ alumni }: { alumni: PublicAlumni[] }) {
+export function FeaturedAlumniSection({ alumni }: { alumni: FeaturedAlumni[] }) {
   if (alumni.length === 0) return null;
 
   return (
@@ -15,8 +15,8 @@ export function FeaturedAlumni({ alumni }: { alumni: PublicAlumni[] }) {
           viewAllLabel="Browse the directory"
         />
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {alumni.map((person) => (
-            <AlumniCard key={person.id} alumni={person} />
+          {alumni.map((member) => (
+            <FeaturedAlumniCard key={member.id} member={member} />
           ))}
         </div>
       </div>

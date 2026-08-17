@@ -31,5 +31,5 @@ export const FOOTER_LINKS = [
 ] as const;
 
 export const CONTACT_EMAIL = "alumni@umu.edu.lr";
-export const CONTACT_PHONE = "+231 77 000 0000";
+export const CONTACT_PHONE = "+231 777100735";
 export const CONTACT_ADDRESS = "United Methodist University, Camp Johnson Road, Monrovia, Liberia";

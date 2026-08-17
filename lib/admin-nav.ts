@@ -8,6 +8,7 @@ import {
   Newspaper,
   Settings,
   ShieldCheck,
+  Star,
   UserCircle,
   Users,
   Landmark,
@@ -34,6 +35,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     label: "Content",
     items: [
       { label: "Alumni", href: "/admin/alumni", icon: Users },
+      { label: "Featured Alumni", href: "/admin/featured-alumni", icon: Star },
       { label: "News", href: "/admin/news", icon: Newspaper },
       { label: "Events", href: "/admin/events", icon: CalendarDays },
       { label: "Gallery", href: "/admin/gallery", icon: ImageIcon },

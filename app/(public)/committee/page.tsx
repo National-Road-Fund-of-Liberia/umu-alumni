@@ -7,6 +7,13 @@ import { PastPresidentCard } from "@/features/past-presidents/components/past-pr
 import { CommitteeService } from "@/services/committee.service";
 import { PastPresidentService } from "@/services/past-president.service";
 
+// Safety net on top of the on-demand revalidatePath() calls in
+// lib/public-cache.ts: if an admin mutation's revalidation ever fails to
+// reach this deployment (e.g. it was triggered from a different
+// environment), this page self-heals within 30s instead of staying stale
+// until the next deploy.
+export const revalidate = 30;
+
 export const metadata: Metadata = {
   title: "Executive Committee",
   description: "Meet the elected leadership of the United Methodist University Alumni Association.",

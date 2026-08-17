@@ -6,6 +6,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlumniDirectory } from "@/features/alumni/components/alumni-directory";
 import { AlumniService } from "@/services/alumni.service";
 
+// Safety net so this self-heals if an admin mutation's on-demand
+// revalidation (lib/public-cache.ts) ever misses this deployment.
+export const revalidate = 30;
+
 export const metadata: Metadata = {
   title: "Alumni Directory",
   description: "Search and connect with United Methodist University graduates.",

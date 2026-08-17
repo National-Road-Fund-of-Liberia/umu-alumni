@@ -8,6 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { NewsService } from "@/services/news.service";
 
+// Safety net so this self-heals if an admin mutation's on-demand
+// revalidation (lib/public-cache.ts) ever misses this deployment.
+export const revalidate = 30;
+
 interface NewsDetailPageProps {
   params: Promise<{ slug: string }>;
 }

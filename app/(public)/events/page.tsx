@@ -10,6 +10,10 @@ import { EventCard } from "@/features/events/components/event-card";
 import { EventService } from "@/services/event.service";
 import { EVENT_CATEGORIES } from "@/types/event";
 
+// Safety net so this self-heals if an admin mutation's on-demand
+// revalidation (lib/public-cache.ts) ever misses this deployment.
+export const revalidate = 30;
+
 export const metadata: Metadata = {
   title: "Events",
   description: "Reunions, chapter meetups, and professional development events for UMU alumni.",

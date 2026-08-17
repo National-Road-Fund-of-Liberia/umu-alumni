@@ -10,6 +10,10 @@ import { NewsCard } from "@/features/news/components/news-card";
 import { NewsService } from "@/services/news.service";
 import { NEWS_CATEGORIES } from "@/types/news";
 
+// Safety net so this self-heals if an admin mutation's on-demand
+// revalidation (lib/public-cache.ts) ever misses this deployment.
+export const revalidate = 30;
+
 export const metadata: Metadata = {
   title: "News",
   description: "Announcements, alumni achievements, and updates from the UMU Alumni Association.",

@@ -14,6 +14,10 @@ import { EventService } from "@/services/event.service";
 import { FeaturedAlumniService } from "@/services/featured-alumni.service";
 import { NewsService } from "@/services/news.service";
 
+// Safety net so this self-heals if an admin mutation's on-demand
+// revalidation (lib/public-cache.ts) ever misses this deployment.
+export const revalidate = 30;
+
 async function HomeDynamicSections() {
   const [stats, featuredAlumni, events, news] = await Promise.all([
     DashboardService.getPublicStats(),

@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 
 export function Hero() {
   return (
-    <section className="border-b border-border bg-background">
-      <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-8">
+    <section className="relative overflow-hidden border-b border-border bg-background">
+      <Image src="/alumni.jpeg" alt="" fill priority className="object-cover" />
+      <div className="absolute inset-0 bg-background/90" aria-hidden="true" />
+
+      <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-8">
         <div>
           <h1 className="text-balance font-heading text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
             A lifelong community for UMU graduates.
@@ -33,7 +36,6 @@ export function Hero() {
               width={200}
               height={200}
               className="h-auto w-2/3"
-              priority
             />
           </div>
         </div>

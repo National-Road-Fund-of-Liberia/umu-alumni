@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { EventService } from "@/services/event.service";
 
+// Safety net so this self-heals if an admin mutation's on-demand
+// revalidation (lib/public-cache.ts) ever misses this deployment.
+export const revalidate = 30;
+
 interface EventDetailPageProps {
   params: Promise<{ slug: string }>;
 }

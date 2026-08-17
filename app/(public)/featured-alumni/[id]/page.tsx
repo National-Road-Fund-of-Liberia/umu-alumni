@@ -6,6 +6,10 @@ import { notFound } from "next/navigation";
 import { DataUriImage } from "@/components/common/data-uri-image";
 import { FeaturedAlumniService } from "@/services/featured-alumni.service";
 
+// Safety net so this self-heals if an admin mutation's on-demand
+// revalidation (lib/public-cache.ts) ever misses this deployment.
+export const revalidate = 30;
+
 interface FeaturedAlumniProfilePageProps {
   params: Promise<{ id: string }>;
 }
